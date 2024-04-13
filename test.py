@@ -51,7 +51,7 @@ if MODEL_WEIGHTS_PATH is not None:
 
 seed_everything(config.seed)
 
-df = pd.read_csv(config.test_data_path).iloc[:2000]
+df = pd.read_csv(config.test_data_path)
 
 print("Constructing test dataset.")
 test_dataset = RNA_Dataset_Test(
@@ -80,11 +80,11 @@ model =  ArmNet(
      use_bppm = config.use_bppm,
 )
 
+print("Weights path: ", str(MODEL_WEIGHTS_PATH))
 model.load_state_dict(
-    torch.load(MODEL_WEIGHTS_PATH, map_location="cpu")['model']
+    torch.load(MODEL_WEIGHTS_PATH, map_location="cpu")
 )
 
-print("Weights path: ", str(MODEL_WEIGHTS_PATH))
 print("Parameter count: ", parameter_count(model))
 
 ids,preds = [],[]

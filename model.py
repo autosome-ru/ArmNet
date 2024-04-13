@@ -210,7 +210,7 @@ class PointwiseConv1D(nn.Module):
         padding: int = 0,
         bias: bool = True,
     ) -> None:
-        super(PointwiseConv1d, self).__init__()
+        super(PointwiseConv1D, self).__init__()
         self.conv = nn.Conv1d(
             in_channels=in_channels,
             out_channels=out_channels,
@@ -258,7 +258,7 @@ class ConvModule(nn.Module):
 
         self.sequential = nn.Sequential(
             Transpose(shape=(1, 2)), # B E S
-            PointwiseConv1d(in_channels, 
+            PointwiseConv1D(in_channels, 
                             in_channels * expansion_factor, 
                             stride=1, 
                             padding=0,
