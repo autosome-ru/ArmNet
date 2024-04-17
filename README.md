@@ -9,6 +9,9 @@ Our approach took the [first place](https://www.kaggle.com/competitions/stanford
 <br>
 [[`Ribonanza Paper Preprint`](https://www.biorxiv.org/content/10.1101/2024.02.24.581671v1)]
 
+## 👩‍💻Model weights
+The ArmNet weights are available at [Kaggle](https://www.kaggle.com/datasets/vyaltsevvaleriy/armnet-weights/data?select=train_test_pseudolabel_weights).
+
 ## 🏃‍♀️Training the model
 
 First, download data from [Stanford Ribonanza RNA Folding](https://www.kaggle.com/competitions/stanford-ribonanza-rna-folding/data) competition and then specify data paths in config file. If you want to train model which takes BPPMs (base pair probability matrices) as input you should do the fllowing:
