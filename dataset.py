@@ -258,3 +258,71 @@ class RNA_Dataset_Test(Dataset):
             X['adj'] = torch.from_numpy(adj).float()
         
         return X, {'ids':ids}
+    
+    
+
+class RNA_Dataset_Pred(Dataset):
+    def __init__(self, 
+                 df: pd.DataFrame,
+                 bppm_path: str = None
+                ):
+        self.df = df
+        self.seq_map = {'A':0,
+                        'C':1,
+                        'G':2,
+                        'T':3,
+                        "START": 4,
+                        "END": 5,
+                        "EMPTY": 6}
+        df['L'] = df.sequence.apply(len)
+        self.Lmax = df['L'].max()
+        if bppm_path is not None:
+            self._use_bppm = True
+        self._bpp_path = bppm_path
+        
+    def __len__(self):
+        return len(self.df)
+    
+    def _process_seq(self, rawseq):
+        seq = [self.seq_map['START']]
+        start_loc = 0
+        seq.extend(self.seq_map[s] for s in rawseq)
+        seq.append(self.seq_map['END'])
+        end_loc = len(seq) - 1
+        for i in range(len(seq), self.Lmax+2):
+            seq.append(self.seq_map['EMPTY'])
+            
+        seq = np.array(seq)
+        seq = torch.from_numpy(seq)
+        
+        return seq, start_loc, end_loc
+    
+    def __getitem__(self, idx):
+        seq, sid = self.df.loc[idx, ['sequence', 'id']]
+        L = len(seq)
+        
+        seq_int, start_loc, end_loc = self._process_seq(seq)
+        mask = torch.zeros(self.Lmax + 2, dtype=torch.bool)
+        mask[start_loc+1:end_loc] = True # not including START and END
+        
+        conv_bpp_mask = torch.zeros(self.Lmax + 2, self.Lmax + 2, dtype=torch.bool)
+        conv_bpp_mask[start_loc+1:end_loc, start_loc+1:end_loc] = True # not including START and END
+      
+        forward_mask = torch.zeros(self.Lmax + 2, dtype=torch.bool) # START, seq, END
+        forward_mask[start_loc:end_loc+1] = True # including START and END 
+        
+        X = {'seq_int': seq_int, 
+             'mask': mask, 
+             "is_good":1,
+             "forward_mask": forward_mask, 
+             'conv_bpp_mask': conv_bpp_mask}
+        
+        if self._bpp_path:
+            adj = _load_bppm(sid, self.Lmax, self._bpp_path)
+            adj = np.pad(adj, ((1,1), (1, 1)), constant_values=0)
+            adj = torch.from_numpy(adj).float()
+            X['adj'] = adj
+        
+        y = sid
+        
+        return X, y
