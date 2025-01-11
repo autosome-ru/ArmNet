@@ -46,4 +46,25 @@ python test.py -c CONFIG.json --pretrained_model_weights ./results/sgd_run/model
 
 To convert submisiion file to dataframe of format equivalent to training dataset you can use `to_train_format` function from `test_utils.py`
 
+## 🧙‍♂️Predicting on custom data
+If you want to predict reactivities with ArmNet for your data, you have to options: using an ensemble model that requires calculating BPPMs (1) and using single model trained on ensemble predictions and which doesn't require calculating BPPMs (2). Both options require that data be converted to a `.tsv` file with two columns: `id` - unique id for each sequence, `sequence` - nucleotide sequence of RNA (with `T` instead of `U`) (as in `example_data.tsv`).
 
+### 1. Predicting with ensemble with BPPMs
+Firstly, you need to install [`arnie`](https://github.com/DasLab/arnie) package. Then in `get_bppms.py` specify paths to arnie config and arnie directory (`arnie/src`) and run the script as shown in the example below
+```
+python3 get_bppms.py -o path/to/bppm_directory -d path/to/data.tsv
+```
+Then run `predict_ensemble_bppm.py` with BPPM data available. Here's example of how to run this script
+
+```
+python3 predict_ensemble_bppm.py -o path/to/output_directory -d path/to/data.tsv -c CONFIG.json --pretrained_models_dir path/to/ensemble_weights --data_bppm_path path/to/bppm_directory
+```
+Predicted reactivities will be available in `ensembled` directory within output directory in numpy-memmap format (shape of array and encoding are specified in the names of files). The order of items in array corresponds to order of sequences in initial dataframe.
+
+### 2. Predicting with single model without BPPMs
+Here we can skip the step with calculating BPPMs and just run `predict_nobppm.py` as follows
+
+```
+python3 predict_nobppm.py -o path/to/output_directory -d path/to/data.tsv -c CONFIG.json --pretrained_models_dir path/to/train_test_pseudolabel_weights
+```
+Here you can use `train_test_pseudolabel_weights` and `train_pseudolabel_weights` weights from Kaggle.
